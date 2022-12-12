@@ -1,0 +1,265 @@
+import numpy as np  
+import matplotlib.pyplot as plt  
+from scipy.integrate import odeint  
+import math
+
+
+def sdot_inhibition(s,t,params):
+    km, km0, kdm, kp, kdp, K, n = params 
+    m_tetR, m_Trp, m_cI, p_tetR, p_Trp, p_cI, m_gfp, p_gfp, m_lacI, p_lacI = s
+    
+    rate_m_lacI_prod = (km*((K**n)/((K**n)+(p_lacI**n))))+km0
+    rate_m_Trp_prod = (km*((K**n)/((K**n)+(p_cI**n))))+km0
+    rate_m_cI_prod   = 0
+    rate_m_tetR_prod = (km*((K**n)/((K**n)+(p_Trp**n))))+km0
+    rate_m_gfp_prod = (km*((K**n)/((K**n)+(p_tetR**n))))+km0
+    
+    rate_p_lacI_prod = kp*m_lacI
+    rate_p_tetR_prod = kp*m_tetR
+    rate_p_Trp_prod = kp*m_Trp
+    rate_p_cI_prod   = kp*m_cI
+    rate_p_gfp_prod = kp*m_gfp
+    
+    rate_m_lacI_loss = kdm*m_lacI
+    rate_m_tetR_loss = kdm*m_tetR
+    rate_m_Trp_loss = kdm*m_Trp
+    rate_m_cI_loss   = kdm*m_cI
+    rate_m_gfp_loss = kdm*m_gfp
+    
+    rate_p_lacI_loss = kdp*p_lacI
+    rate_p_tetR_loss = kdp*p_tetR   
+    rate_p_Trp_loss = kdp*p_Trp
+    rate_p_cI_loss   = kdp*p_cI
+    rate_p_gfp_loss = kdp*p_gfp
+    
+    dm_lacI = rate_m_lacI_prod - rate_m_lacI_loss
+    dm_tetR = rate_m_tetR_prod - rate_m_tetR_loss
+    dm_Trp = rate_m_Trp_prod - rate_m_Trp_loss
+    dm_cI   = rate_m_cI_prod - rate_m_cI_loss
+    dm_gfp = rate_m_gfp_prod - rate_m_gfp_loss
+    
+    dp_lacI = rate_p_lacI_prod - rate_p_lacI_loss
+    dp_tetR = rate_p_tetR_prod - rate_p_tetR_loss
+    dp_Trp = rate_p_Trp_prod - rate_p_Trp_loss
+    dp_cI   = rate_p_cI_prod - rate_p_cI_loss
+    dp_gfp   = rate_p_gfp_prod - rate_p_gfp_loss
+    
+    ds0 = [dm_tetR, dm_Trp, dm_cI, dp_tetR, dp_Trp, dp_cI, dm_gfp, dp_gfp, dm_lacI, dp_lacI]
+    
+    return ds0  
+ 
+def sdot_repressilator(s,t,params):  
+    
+    km, km0, kdm, kp, kdp, K, n = params 
+    m_tetR, m_Trp, m_cI, p_tetR, p_Trp, p_cI, m_gfp, p_gfp, m_lacI, p_lacI = s
+    
+    rate_m_lacI_prod = (km*((K**n)/((K**n)+(p_lacI**n))))+km0
+    rate_m_Trp_prod = (km*((K**n)/((K**n)+(p_cI**n))))+km0
+    rate_m_cI_prod   = (km*((K**n)/((K**n)+(p_tetR**n))))+km0
+    rate_m_tetR_prod = (km*((K**n)/((K**n)+(p_Trp**n))))+km0
+    rate_m_gfp_prod = (km*((K**n)/((K**n)+(p_tetR**n))))+km0
+    
+    rate_p_lacI_prod = kp*m_lacI
+    rate_p_Trp_prod = kp*m_Trp
+    rate_p_cI_prod   = kp*m_cI
+    rate_p_tetR_prod = kp*m_tetR
+    rate_p_gfp_prod = kp*m_gfp
+    
+    rate_m_lacI_loss = kdm*m_lacI
+    rate_m_Trp_loss = kdm*m_Trp
+    rate_m_cI_loss   = kdm*m_cI
+    rate_m_tetR_loss = kdm*m_tetR
+    rate_m_gfp_loss = kdm*m_gfp
+    
+    rate_p_lacI_loss = kdp*p_lacI
+    rate_p_Trp_loss = kdp*p_Trp
+    rate_p_cI_loss   = kdp*p_cI
+    rate_p_tetR_loss = kdp*p_tetR   
+    rate_p_gfp_loss = kdp*p_gfp
+    
+    dm_lacI = rate_m_lacI_prod - rate_m_lacI_loss
+    dm_Trp = rate_m_Trp_prod - rate_m_Trp_loss
+    dm_cI   = rate_m_cI_prod - rate_m_cI_loss
+    dm_tetR = rate_m_tetR_prod - rate_m_tetR_loss
+    dm_gfp = rate_m_gfp_prod - rate_m_gfp_loss
+    
+    dp_lacI = rate_p_lacI_prod - rate_p_lacI_loss
+    dp_Trp = rate_p_Trp_prod - rate_p_Trp_loss
+    dp_cI   = rate_p_cI_prod - rate_p_cI_loss
+    dp_tetR = rate_p_tetR_prod - rate_p_tetR_loss
+    dp_gfp   = rate_p_gfp_prod - rate_p_gfp_loss
+    
+    ds1 = [dm_tetR, dm_Trp, dm_cI, dp_tetR, dp_Trp, dp_cI, dm_gfp, dp_gfp, dm_lacI, dp_lacI]
+    
+    return ds1
+
+
+def sdot_suspend(s,t,params):  
+    
+    klux, km, km0, kdm, kp, kdp, K, n = params 
+    m_tetR, m_Trp, m_cI, p_tetR, p_Trp, p_cI, m_gfp, p_gfp, m_lacI, p_lacI = s
+    
+    rate_m_lacI_prod = (km*((K**n)/((K**n)+(p_lacI**n))))+km0
+    rate_m_Trp_prod = (klux*km*((K**n)/((K**n)+(p_cI**n))))+km0
+    rate_m_cI_prod   = 0
+    rate_m_tetR_prod = (km*((K**n)/((K**n)+(p_Trp**n))))+km0
+    rate_m_gfp_prod = (km*((K**n)/((K**n)+(p_tetR**n))))+km0
+    
+    rate_p_lacI_prod = kp*m_lacI
+    rate_p_Trp_prod = kp*m_Trp
+    rate_p_cI_prod   = kp*m_cI
+    rate_p_tetR_prod = kp*m_tetR
+    rate_p_gfp_prod = kp*m_gfp
+    
+    rate_m_lacI_loss = kdm*m_lacI
+    rate_m_Trp_loss = kdm*m_Trp
+    rate_m_cI_loss   = kdm*m_cI
+    rate_m_tetR_loss = kdm*m_tetR
+    rate_m_gfp_loss = kdm*m_gfp
+    
+    rate_p_lacI_loss = kdp*p_lacI
+    rate_p_Trp_loss = kdp*p_Trp
+    rate_p_cI_loss   = kdp*p_cI
+    rate_p_tetR_loss = kdp*p_tetR
+    rate_p_gfp_loss = kdp*p_gfp
+    
+    dm_lacI = rate_m_lacI_prod - rate_m_lacI_loss
+    dm_Trp = rate_m_Trp_prod - rate_m_Trp_loss
+    dm_cI   = rate_m_cI_prod - rate_m_cI_loss
+    dm_tetR = rate_m_tetR_prod - rate_m_tetR_loss
+    dm_gfp = rate_m_gfp_prod - rate_m_gfp_loss
+    
+    dp_lacI = rate_p_lacI_prod - rate_p_lacI_loss
+    dp_Trp = rate_p_Trp_prod - rate_p_Trp_loss
+    dp_cI   = rate_p_cI_prod - rate_p_cI_loss
+    dp_tetR = rate_p_tetR_prod - rate_p_tetR_loss
+    dp_gfp   = rate_p_gfp_prod - rate_p_gfp_loss
+    
+    ds2 = [dm_tetR, dm_Trp, dm_cI, dp_tetR, dp_Trp, dp_cI, dm_gfp, dp_gfp, dm_lacI, dp_lacI]
+    
+    return ds2
+    
+    
+#Parameter values
+km = 10
+km0 = 0.03
+kdm = 0.4466
+kp = 6.931
+kdp = 0.06931
+K = 40
+n = 2.8
+params = [ km, km0, kdm, kp, kdp, K, n ]
+
+#Initial conditions
+m_tetR0 = 1
+m_Trp0 = 1
+m_cI0   = 1
+p_tetR0 = 0
+p_Trp0 = 0
+p_cI0   = 0
+m_gfp0 = 0
+p_gfp0 = 0
+m_lacI0 = 1
+p_lacI0 = 10
+s0 = [ m_tetR0, m_Trp0, m_cI0, p_tetR0, p_Trp0, p_cI0, m_gfp0, p_gfp0, m_lacI0, p_lacI0]
+
+#Time observations
+t_start = 200
+t_max = 1600
+t_end = 2000
+
+#Run simulation0
+t_obs0 = np.linspace(0,t_start,t_start+1)
+s_obs0 = odeint(sdot_inhibition,s0,t_obs0,args=(params,) ) 
+m_tetR_obs0 = s_obs0[:,0]
+m_Trp_obs0 = s_obs0[:,1]
+m_cI_obs0 = s_obs0[:,2]
+p_tetR_obs0 = s_obs0[:,3]
+p_Trp_obs0 = s_obs0[:,4]
+p_cI_obs0 = s_obs0[:,5]
+m_lacI_obs0 = s_obs0[:,8]
+p_lacI_obs0 = s_obs0[:,9]
+
+#Run simulation1
+t_obs1 = np.linspace(t_start,t_max,t_max-t_start+1) 
+s_obs1 = odeint(sdot_repressilator,s_obs0[-1],t_obs1,args=(params,))  
+m_tetR_obs1 = s_obs1[:,0]
+m_Trp_obs1 = s_obs1[:,1]
+m_cI_obs1 = s_obs1[:,2]
+p_tetR_obs1 = s_obs1[:,3]
+p_Trp_obs1 = s_obs1[:,4]
+p_cI_obs1 = s_obs1[:,5]
+m_lacI_obs1 = s_obs1[:,8]
+p_lacI_obs1 = s_obs1[:,9]
+
+#Run simulation2
+klux = 1.05
+params = [ klux, km, km0, kdm, kp, kdp, K, n ]
+t_obs2 = np.linspace(t_max,t_end,t_end-t_max+1) 
+s_obs2 = odeint(sdot_suspend,s_obs1[-1],t_obs2,args=(params,))  
+m_tetR_obs2 = s_obs2[:,0]
+m_Trp_obs2 = s_obs2[:,1]
+m_cI_obs2 = s_obs2[:,2]
+p_tetR_obs2 = s_obs2[:,3]
+p_Trp_obs2 = s_obs2[:,4]
+p_cI_obs2 = s_obs2[:,5]
+m_lacI_obs2 = s_obs2[:,8]
+p_lacI_obs2 = s_obs2[:,9]
+
+t_obs = np.concatenate((t_obs0, t_obs1, t_obs2))
+p_Trp_obs = np.concatenate((p_Trp_obs0,p_Trp_obs1,p_Trp_obs2))
+p_cI_obs = np.concatenate((p_cI_obs0,p_cI_obs1,p_cI_obs2))
+p_tetR_obs = np.concatenate((p_tetR_obs0,p_tetR_obs1,p_tetR_obs2))
+m_lacI_obs = np.concatenate((m_lacI_obs0,m_lacI_obs1,m_lacI_obs2))
+p_lacI_obs = np.concatenate((p_lacI_obs0,p_lacI_obs1,p_lacI_obs2))
+
+# protein plot
+fig = plt.figure(figsize=(10, 5))
+ax = fig.add_subplot(1,1,1)
+ax.set_xlabel('Time (min)')
+ax.set_ylabel('Proteins per cell')
+ax.set_ylim(0,3200)
+ax.set_title('Protein production vs time')
+ax.plot(t_obs, p_tetR_obs, '-',label='tetR',color='r')
+ax.plot(t_obs, p_Trp_obs, '-',label='Trp', color='b')
+ax.plot(t_obs, p_cI_obs, '-',label='cI', color='y')
+plt.annotate('IPTG',xy=(t_start,p_Trp_obs[t_start]+10),xycoords='data',textcoords='data',xytext=(+145,+2700),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+plt.annotate('AHL',xy=(t_max,p_Trp_obs[t_max]+800),xycoords='data',textcoords='data',xytext=(+1555,+2000),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+ax.legend()
+plt.savefig('protein.png',dpi=80)
+
+# mRNA plot
+m_Trp_obs = np.concatenate((m_Trp_obs0,m_Trp_obs1,m_Trp_obs2))
+m_cI_obs = np.concatenate((m_cI_obs0,m_cI_obs1,m_cI_obs2))
+m_tetR_obs = np.concatenate((m_tetR_obs0,m_tetR_obs1,m_tetR_obs2))
+fig = plt.figure(figsize=(10, 5))
+ax = fig.add_subplot(1,1,1)
+ax.set_xlabel('Time (min)')
+ax.set_ylabel('mRNA per cell')
+ax.set_ylim(0,35)
+ax.set_title('mRNA production vs time')
+ax.plot(t_obs, m_tetR_obs, '-',label='tetR',color='r')
+ax.plot(t_obs, m_Trp_obs, '-',label='Trp', color='b')
+ax.plot(t_obs, m_cI_obs, '-',label='cI', color='y')
+plt.annotate('IPTG',xy=(t_start,m_Trp_obs[t_start]),xycoords='data',textcoords='data',xytext=(+145,+27),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+plt.annotate('AHL',xy=(t_max,m_Trp_obs[t_max]+18),xycoords='data',textcoords='data',xytext=(+1555,+23),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+ax.legend()
+plt.savefig('mRNA.png',dpi=80)
+
+# gfp protein plot
+p_gfp_obs0 = s_obs0[:,7]
+p_gfp_obs1 = s_obs1[:,7]
+p_gfp_obs2 = s_obs2[:,7]
+p_gfp_obs = np.concatenate((p_gfp_obs0, p_gfp_obs1, p_gfp_obs2))
+fig = plt.figure(figsize=(10, 5))
+ax = fig.add_subplot(1,1,1)
+legends = ['gfp']
+ax.set_xlabel('Time (min)')
+ax.set_ylabel('Fluorescence of gfp per cell')
+ax.set_ylim(0,3000)
+ax.set_title('Fluorescence of gfp vs time')
+ax.plot(t_obs, p_gfp_obs, '-',label='gfp fluorescence',color='g')
+plt.annotate('IPTG',xy=(t_start,p_Trp_obs[t_start]+10),xycoords='data',textcoords='data',xytext=(+145,+2650),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+plt.annotate('AHL',xy=(t_max,p_Trp_obs[t_max]+1200),xycoords='data',textcoords='data',xytext=(+1555,+2000),fontsize = 12,arrowprops = dict(arrowstyle='->'))
+ax.legend()
+plt.savefig('gfp.png',dpi=80)
